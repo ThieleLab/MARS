@@ -13,7 +13,7 @@ MARS is a Python-based project designed to process and analyze microbial abundan
 
 1. Clone this repository:
 ```
-git clone https://github.com/timhunuig/MARS.git
+git clone https://github.com/timhunuig/mars-project.git
 ```
 
 2. Change to the project directory:
