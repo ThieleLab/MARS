@@ -18,7 +18,7 @@ git clone https://github.com/timhunuig/mars-project.git
 
 2. Change to the project directory:
 ```
-cd MARS
+cd mars-project
 ```
 
 3. Install the required packages using pip:
