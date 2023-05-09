@@ -56,7 +56,7 @@ The main components of the project are:
 - `main.py`: Contains the main function that processes and analyzes the microbial abundances.
 - `operations.py`: Contains functions for various operations such as splitting, renaming, checking against AGORA2, and calculating metrics.
 - `utils.py`: Contains utility functions used throughout the project.
-- `tests/`: Contains test files for the project, including test.py for testing the main function.
+- `tests/`: Contains test files for the project, including `test.py` for testing the main function.
 
 ## Contributing
 
