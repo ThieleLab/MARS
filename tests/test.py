@@ -12,4 +12,4 @@ if __name__ == '__main__':
     file1_path = os.path.join(test_files_dir, 'feature-table.txt')
     file2_path = os.path.join(test_files_dir, 'taxonomy.tsv')
 
-    process_microbial_abundances(file1_path, file2_path, r'/mnt/c/Users/THuls/Downloads/output')
+    process_microbial_abundances(file1_path, file2_path, r'path/to/your/output_folder')
