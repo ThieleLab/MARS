@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import os
+import numpy as np
 
 def split_taxonomic_groups(merged_df):
     """
@@ -93,14 +94,14 @@ def rename_taxa(taxonomic_dfs):
 def check_presence_in_agora2(dataframes):
     """
     Check if entries from the input DataFrames are in the AGORA2 DataFrame under the same level column.
-    Split the input DataFrames into two DataFrames: present and absent. Renormalize both DataFrames.
+    Split the input DataFrames into two DataFrames: present and absent. 
     Add "pan" prefix to the index of the present DataFrame if the level is "Species".
 
     Args:
         dataframes (dict): A dictionary containing the input DataFrames to be checked against AGORA2.
 
     Returns:
-        dict: A dictionary containing the present and absent DataFrames, renormalized, for each taxonomic level.
+        dict: A dictionary containing the present and absent DataFrames for each taxonomic level.
     """
 
     resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
@@ -122,11 +123,50 @@ def check_presence_in_agora2(dataframes):
         absent_mask = ~present_mask
         absent_df = input_df.loc[absent_mask]
 
-        # Renormalize both DataFrames
-        present_df = present_df.div(present_df.sum(axis=0), axis=1)
-        absent_df = absent_df.div(absent_df.sum(axis=0), axis=1)
-
         present_dataframes[level] = present_df
         absent_dataframes[level] = absent_df
 
     return present_dataframes, absent_dataframes
+
+def calculate_metrics(dataframes):
+    """
+    Calculate alpha diversity, read counts, Firmicutes to Bacteroidetes ratio.
+
+    Args:
+        dataframes (dict): A dictionary with keys as taxonomic levels and values as the corresponding DataFrames.
+
+    Returns:
+        dict: A dictionary with keys as taxonomic levels and values as the calculated metrics.
+    """
+
+    metrics = {}
+
+    for level, df in dataframes.items():
+        # Calculate read counts
+        read_counts = df.sum()
+
+        # Calculate alpha diversity using the Shannon index
+        shannon_index = -1 * (df * df.apply(np.log)).sum()
+
+        level_metrics = {
+            'read_counts': read_counts,
+            'shannon_index': shannon_index,
+        }
+
+        if level == 'Phylum':
+            # Calculate phylum distribution
+            phylum_distribution = df.groupby(df.index.name).sum()
+
+            # Calculate Firmicutes to Bacteroidetes ratio
+            firmicutes = phylum_distribution.loc['Firmicutes'] if 'Firmicutes' in phylum_distribution.index else 0
+            bacteroidetes = phylum_distribution.loc['Bacteroidetes'] if 'Bacteroidetes' in phylum_distribution.index else 0
+            fb_ratio = firmicutes / bacteroidetes
+
+            level_metrics.update({
+                'firmicutes_bacteroidetes_ratio': fb_ratio,
+            })
+
+        # Add the metrics to the main dictionary
+        metrics[level] = level_metrics
+
+    return metrics

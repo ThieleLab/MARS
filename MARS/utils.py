@@ -65,13 +65,15 @@ def merge_files(file_path1, file_path2):
 
     return merged_df
 
-def normalize_dataframes(dataframes):
+def normalize_dataframes(dataframes, cutoff=None):
     """
     Normalize the taxonomic DataFrames by grouping and summing rows with the same name,
-    and then normalizing each column so that the sum of each column is 1.
+    and then normalizing each column so that the sum of each column is 1. Optionally, a
+    cut-off can be provided to filter out low abundance taxa before normalization.
 
     Args:
         dataframes (dict): A dictionary with keys as taxonomic levels and values as the corresponding DataFrames.
+        cutoff (float, optional): A cut-off value for filtering out low abundance taxa. Defaults to None.
 
     Returns:
         dict: A dictionary with keys as taxonomic levels and values as the normalized DataFrames.
@@ -82,6 +84,10 @@ def normalize_dataframes(dataframes):
     for level, df in dataframes.items():
         # Group by index and sum the rows with the same name
         grouped_df = df.groupby(df.index.name).sum()
+
+        # Optionally apply cut-off for low abundance taxa
+        if cutoff is not None:
+            grouped_df = grouped_df[grouped_df >= cutoff]
 
         # Normalize each column so that the sum of each column is 1
         normalized_df = grouped_df / grouped_df.sum()
@@ -107,18 +113,70 @@ def save_dataframes(dataframe_groups, output_path, output_format):
     for group_name, dataframes in dataframe_groups.items():
         group_output_path = os.path.join(output_path, group_name)
         os.makedirs(group_output_path, exist_ok=True)
+        if group_name == "metrics":
+            for level, metrics_dataframes in dataframes.items():
+                level_output_path = os.path.join(group_output_path, level)
+                os.makedirs(level_output_path, exist_ok=True)
 
-        for level, df in dataframes.items():
-            file_name = f"{group_name}_{level.lower()}.{output_format}"
-            file_path = os.path.join(group_output_path, file_name)
+                for metric_name, df in metrics_dataframes.items():
+                    file_name = f"{metric_name}.{output_format}"
+                    file_path = os.path.join(level_output_path, file_name)
 
-            if output_format == "csv":
-                df.to_csv(file_path)
-            elif output_format == "excel":
-                df.to_excel(file_path)
-            elif output_format == "parquet":
-                df.to_parquet(file_path)
-            elif output_format == "json":
-                df.to_json(file_path)
-            else:
-                raise ValueError(f"Unsupported output format: {output_format}")
+                    if output_format == "csv":
+                        df.to_csv(file_path)
+                    elif output_format == "txt" or output_format == "tsv":
+                        df.to_csv(file_path, sep='\t')
+                    elif output_format == "excel":
+                        df.to_excel(file_path)
+                    elif output_format == "parquet":
+                        df.to_parquet(file_path)
+                    elif output_format == "json":
+                        df.to_json(file_path)
+                    else:
+                        raise ValueError(f"Unsupported output format: {output_format}")
+        else:
+            for level, df in dataframes.items():
+                file_name = f"{group_name}_{level.lower()}.{output_format}"
+                file_path = os.path.join(group_output_path, file_name)
+
+                if output_format == "csv":
+                    df.to_csv(file_path)
+                elif output_format == "txt" or output_format == "tsv":
+                    df.to_csv(file_path, sep='\t')
+                elif output_format == "excel":
+                    df.to_excel(file_path)
+                elif output_format == "parquet":
+                    df.to_parquet(file_path)
+                elif output_format == "json":
+                    df.to_json(file_path)
+                else:
+                    raise ValueError(f"Unsupported output format: {output_format}")
+            
+def combine_metrics(metrics1, metrics2):
+    """
+    Combine the metrics from two different sets of taxonomic DataFrames into a single DataFrame for each level.
+
+    Args:
+        metrics1 (dict): A dictionary with keys as taxonomic levels and values as the calculated metrics for the first group.
+        metrics2 (dict): A dictionary with keys as taxonomic levels and values as the calculated metrics for the second group.
+
+    Returns:
+        dict: A dictionary with keys as taxonomic levels and values as the combined DataFrames.
+    """
+
+    combined_metrics = {}
+
+    for level in metrics1.keys():
+        level_metrics1 = metrics1[level]
+        level_metrics2 = metrics2[level]
+
+        combined_level_metrics = {}
+
+        for metric_name in level_metrics1.keys():
+            combined_metric = pd.DataFrame([level_metrics1[metric_name], level_metrics2[metric_name]])
+            combined_metric.index = ['pre AGORA2 mapping', 'post AGORA2 mapping']
+            combined_level_metrics[metric_name] = combined_metric
+
+        combined_metrics[level] = combined_level_metrics
+
+    return combined_metrics
