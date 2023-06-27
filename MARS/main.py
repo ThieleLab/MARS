@@ -2,7 +2,7 @@ from MARS.utils import merge_files, normalize_dataframes, save_dataframes, combi
 from MARS.operations import split_taxonomic_groups, rename_taxa, calculate_metrics, check_presence_in_agora2
 import pandas as pd
 
-def process_microbial_abundances(input_file1, input_file2, output_path, cutoff=None, output_format="csv", stratification_file=None):
+def process_microbial_abundances(input_file1, input_file2, output_path=None, cutoff=None, output_format="csv", stratification_file=None):
     merged_dataframe = merge_files(input_file1, input_file2)
     taxonomic_dataframes = split_taxonomic_groups(merged_dataframe)
     renamed_dataframes = rename_taxa(taxonomic_dataframes)
@@ -39,5 +39,5 @@ def process_microbial_abundances(input_file1, input_file2, output_path, cutoff=N
     # Save the resulting DataFrames if output_path is provided
     if output_path is not None:
         save_dataframes(dataframe_groups, output_path, output_format)
-    else:
-        raise ValueError("Output path must be specified.")
+        
+    return dataframe_groups

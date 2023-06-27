@@ -13,5 +13,4 @@ if __name__ == '__main__':
     file2_path = os.path.join(test_files_dir, 'taxonomy.tsv')
     stratification = os.path.join(test_files_dir, 'stratification_file.csv')
 
-    # process_microbial_abundances(file1_path, file2_path, r'path/to/your/output_folder')
-    process_microbial_abundances(file1_path, file2_path, r'output', stratification_file=stratification)
+    result_dataframes = process_microbial_abundances(file1_path, file2_path, stratification_file=stratification, output_path=r"/path/to/your/output/folder")
