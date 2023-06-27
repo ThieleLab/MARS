@@ -113,7 +113,7 @@ def save_dataframes(dataframe_groups, output_path, output_format):
     for group_name, dataframes in dataframe_groups.items():
         group_output_path = os.path.join(output_path, group_name)
         os.makedirs(group_output_path, exist_ok=True)
-        if group_name == "metrics":
+        if "metrics" in group_name:
             for level, metrics_dataframes in dataframes.items():
                 level_output_path = os.path.join(group_output_path, level)
                 os.makedirs(level_output_path, exist_ok=True)

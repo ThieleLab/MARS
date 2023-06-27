@@ -128,7 +128,7 @@ def check_presence_in_agora2(dataframes):
 
     return present_dataframes, absent_dataframes
 
-def calculate_metrics(dataframes):
+def calculate_metrics(dataframes, group=None):
     """
     Calculate alpha diversity, read counts, Firmicutes to Bacteroidetes ratio.
 
@@ -142,6 +142,9 @@ def calculate_metrics(dataframes):
     metrics = {}
 
     for level, df in dataframes.items():
+        if group is not None:
+            df = df[group]
+            
         # Calculate read counts
         read_counts = df.sum()
 
