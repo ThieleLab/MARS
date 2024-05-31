@@ -65,6 +65,25 @@ def merge_files(file_path1, file_path2):
 
     return merged_df
 
+def merge_files_streamlit(file_path1, file_path2):
+    # Read input files into pandas DataFrames
+    df1 = pd.read_csv(file_path1, sep='\t', index_col=[0], low_memory=False, header=0)
+    df2 = pd.read_csv(file_path2, sep='\t', index_col=[0], low_memory=False, header=1)
+
+    # Merge DataFrames using their index values
+    merged_df = pd.merge(df1, df2, left_index=True, right_index=True, how='inner')
+
+    # Drop the 'Confidence' column
+    merged_df = merged_df.drop(columns=['Confidence'])
+
+    # Replace all level indicators in the 'Taxon' column
+    merged_df['Taxon'] = merged_df['Taxon'].replace(".__", "", regex=True)
+
+    # Reset the index and set the 'Taxon' column as the new index
+    merged_df = merged_df.reset_index(drop=True).set_index('Taxon')
+
+    return merged_df
+
 def normalize_dataframes(dataframes, cutoff=None):
     """
     Normalize the taxonomic DataFrames by grouping and summing rows with the same name,
